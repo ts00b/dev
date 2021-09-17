@@ -8,11 +8,11 @@ Table utilisateurs {
   id int [pk, increment] // auto-increment
   nom_complet varchar
   nom varchar
-  type_id int [ref: > utilisateurs_type.id]
-  titre_id int [ref: > utilisateurs_titre.id]
+  type_id int [ref: - utilisateurs_type.id]
+  titre_id int [ref: - utilisateurs_titre.id]
   mail varchar
   matricule_employe varchar
-  Agence_id int [ref: > Agence.id]
+  agence_id int [ref: - agence.id]
   tel_bureau varchar
   tel_portable varchar
   est_actif boolean
@@ -47,7 +47,7 @@ Table region {
 }
 Table departement {
   id int [pk, increment]
-  region_id int [ref: > region.id]
+  region_id int [ref: - region.id]
   nom varchar
   indexes{
     id
@@ -56,9 +56,9 @@ Table departement {
     (id, region_id, nom)
   }
 }
-Table Agence {
+Table agence {
   id int [pk, increment]
-  departement_id int [ref: > departement.id]
+  departement_id int [ref: - departement.id]
   nom varchar
   indexes{
     id
@@ -72,7 +72,7 @@ Table Agence {
 // a compléter
 Table entreprise {
   id int [pk, increment]
-  type int [ref: > entreprise_type.id]
+  type int [ref: - entreprise_type.id]
   nom varchar
   adresse varchar
   indexes{
@@ -93,7 +93,7 @@ Table entreprise_type {
 //mais une entreprise peut avoir plusieurs contacts
 Table contact {
   id int [pk, increment]
-  entreprise_id int [ref: > entreprise.id]
+  entreprise_id int [ref: - entreprise.id]
   nom varchar
   prenom varchar
   fonction varchar
@@ -109,18 +109,18 @@ Table contact {
 }
 //fin definition client contact entreprise_id
 // definition des Avant_Vente
-Table Avant_Vente {
+Table avant_vente {
 //nécessaire à la création
   id int [pk, increment]
-  cree_par int [ref: < utilisateurs.id]
-  demandeur int [ref: < utilisateurs.id]
+  cree_par int [ref: - utilisateurs.id]
+  demandeur int [ref: - utilisateurs.id]
   opportunite_Salesforce varchar
-  client_id int [ref: < entreprise.id]
+  client_id int [ref: - entreprise.id]
   nom_projet varchar [not null]
-  type_demande int [ref: > Avant_Vente_type.id]
-  Agence int [ref: < Agence.id]
-  format_reponse int [ref: > Avant_Vente_format_reponse.id]
-  status int [ref: > Avant_Vente_status.id]
+  type_demande int [ref: - avant_Vente_type.id]
+  agence_id int [ref: - agence.id]
+  format_reponse int [ref: - avant_Vente_format_reponse.id]
+  status int [ref: - avant_Vente_status.id]
   Date_souhaitee datetime
   Date_imperative datetime [not null]
   Date_rendu datetime
@@ -130,12 +130,12 @@ Table Avant_Vente {
 //fin nécessaire creation
 ///vie d'avant vente
   avancement int
-  Acteur_principal int [ref: > utilisateurs.id]
+  Acteur_principal int [ref: - utilisateurs.id]
   //charge par Acteur
   Charge_acteur_principal int
-  Acteur_2 int [ref: > utilisateurs.id]
+  Acteur_2 int [ref: - utilisateurs.id]
   Charge_Acteur_2 int
-  Acteur_3 int [ref: > utilisateurs.id]
+  Acteur_3 int [ref: - utilisateurs.id]
   Charge_Acteur_3 int
   //charge par DAS suite rendu
   charge_das_Datacenter int
@@ -143,7 +143,7 @@ Table Avant_Vente {
   charge_das_workplace int
   charge_das_IP int
   charge_das_autre int
-  indice_confiance int [ ref: > indice_confiance.id]
+  indice_confiance int [ ref: - indice_confiance.id]
   // budgets estimée suite Avant_Vente
   budget_negoce int
   budget_build int
@@ -155,18 +155,18 @@ Table Avant_Vente {
 
 }
 //format de réponse : ppt, word, ...
-Table Avant_Vente_format_reponse{
+Table avant_Vente_format_reponse{
   id int [pk, increment]
   nom varchar
 }
 //definition du type de demande : qualification, RFP, budget, ...
-Table Avant_Vente_type{
+Table avant_Vente_type{
   id int [pk, increment]
   nom varchar
 }
 
 //liste des status : ouvert, en cours, terminé, ...
-Table  Avant_Vente_status {
+Table  avant_Vente_status {
   id int [pk, increment]
   nom varchar
 }
@@ -182,21 +182,21 @@ table note {
   created_at datetime [default: `now()`]
 }
 //association entre les notes et les AVV
-table assoc_Avant_vente_note {
-  Avant_Vente_id int [ref: > Avant_Vente.id]
-  note_id int [ref: > note.id]
+table assoc_avant_vente_note {
+  avant_vente_id int [ref: - avant_vente.id]
+  note_id int [ref: - note.id]
 }
 //table qui regroupe tous les logs
 table log {
   id int [pk, increment]
-  cree_par int [ref: < utilisateurs.id]
+  cree_par int [ref: - utilisateurs.id]
   contenu text
   created_at datetime [default: `now()`]
 }
 //table d'association entre les logs et les notes
 table assoc_Avant_vente_log {
-  log_id int [ref: > log.id]
-  Avant_Vente_id int [ref: > Avant_Vente.id]
+  log_id int [ref: - log.id]
+  avant_vente_id int [ref: - avant_vente.id]
 }
 //table qui recence tous les items ajoutés au planning
 table planning{
@@ -205,25 +205,69 @@ table planning{
   charge decimal
   AM_ou_PM boolean [note: 'false pour matin, true pour apres midi']
 }
-//table d'association des entrées planning aux utilisateurs et aux demandes ou AVV liées
+//table d'association des entrées planning aux utilisateurs et 
+//aux demandes ou AVV liées
 table assoc_utilisateur_planning_AVV_planification{
-  user_id int [ref: > utilisateurs.id]
-  planning_id int [ref: > planning.id]
-  Avant_Vente_id int [ref: > Avant_Vente.id]
-  planification_id int [ref: > planification.id]
+  user_id int [ref: - utilisateurs.id]
+  type_entree type_entree 
+  planning_id int [ref: - planning.id]
+  avant_vente_id int [ref: - avant_vente.id]
+  planification_id int [ref: - planification.id]
+}
+//creation d'un selecteur pour le type d'entrées
+//dans le tableau d'association utilisateur planning 
+enum type_entree{
+  AVV
+  planification
 }
 
-
 Table planification{
+  //nécessaire çà la création
   id int [pk, increment]
-  das_principal int [ref: > DAS.id]
-  das_2 int [ref: > DAS.id]
-  das_3 int [ref: > DAS.id]
-  das_4 int [ref: > DAS.id]
-  das_5 int [ref: > DAS.id]
+  cree_par int [ref: - utilisateurs.id]
+  code_imputation varchar
+  demandeur int [ref: - utilisateurs.id]  
+  client_id int [ref: - entreprise.id]
+  contact_client int [ref: - contact.id]
+  charge_perimetre_valide boolean
+  validateur int [ref: - utilisateurs.id] 
+  date_debut_souhaitee datetime
+  date_fin_souhaitee datetime
+  das_principal int [ref: - DAS.id]
+  charge_das1 int
+  das_2 int [ref: - DAS.id]
+  charge_das2 int
+  das_3 int [ref: - DAS.id]
+  charge_das3 int
+  das_4 int [ref: - DAS.id]
+  charge_das4 int
+  das_5 int [ref: - DAS.id]
+  charge_das5 int
+  piece_jointe varchar
+  raccourci varchar
+  status_id int [ref: - planification_status.id]
+  created_at datetime [default: `now()`]
+  //pour vie de la demande de planification_status
+  responsable_planification int [ref: - planification_responsable.id]
+  chef_projet int [ref: - utilisateurs.id]
+}
+//liste des status associé aux planification
+Table planification_status{
+  id int [pk, increment]
+  status varchar
+}
+//personne en charge de la planification du dossier de planification : AT, manager, IA, ...
+table planification_responsable{
+  id int [pk, increment]
+  nom varchar
 }
 //Liste des DAS : Datacenter, IP, CUC, ...
 Table DAS {
   id int [pk, increment]
   nom varchar
+}
+//table d'association des notes et planifications
+table assoc_planification_note {
+  planification_id int [ref: - planification.id]
+  note_id int [ref: - note.id]
 }
