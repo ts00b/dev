@@ -1,0 +1,229 @@
+//// -- LEVEL 1
+//// -- Tables and References
+
+// Creating tables
+//toutes les tables qui concernent les utilisateurs
+//definition d'un utilisateurs
+Table utilisateurs {
+  id int [pk, increment] // auto-increment
+  nom_complet varchar
+  nom varchar
+  type_id int [ref: > utilisateurs_type.id]
+  titre_id int [ref: > utilisateurs_titre.id]
+  mail varchar
+  matricule_employe varchar
+  Agence_id int [ref: > Agence.id]
+  tel_bureau varchar
+  tel_portable varchar
+  est_actif boolean
+  derniere_visite timestamp
+  created_at datetime [default: `now()`]
+  code_imputation varchar
+  indexes{
+    id
+    nom
+  }
+}
+//contient les types d'utilisateurs : archi, RT, ... : utilisé pour donner des droits
+Table utilisateurs_type {
+  id int [pk, increment]
+  name varchar
+  continent_name varchar
+}
+// utilisé pour ajouter de l'info : RT CUC, archi Data, ...
+Table utilisateurs_titre {
+  id int [pk, increment]
+  nom varchar
+}
+// fin définition utilisateur
+// définition des régions et département, et agence
+Table region {
+  id int [pk, increment]
+  nom varchar
+  indexes{
+    id
+    nom
+  }
+}
+Table departement {
+  id int [pk, increment]
+  region_id int [ref: > region.id]
+  nom varchar
+  indexes{
+    id
+    region_id
+    nom
+    (id, region_id, nom)
+  }
+}
+Table Agence {
+  id int [pk, increment]
+  departement_id int [ref: > departement.id]
+  nom varchar
+  indexes{
+    id
+    departement_id
+    nom
+    (id, departement_id, nom)
+  }
+}
+//fin définition régions
+//définition des clients entreprise et contact
+// a compléter
+Table entreprise {
+  id int [pk, increment]
+  type int [ref: > entreprise_type.id]
+  nom varchar
+  adresse varchar
+  indexes{
+    id
+    nom
+  }
+}
+// type d'entreprise : public ou privé
+Table entreprise_type {
+  id int [pk, increment]
+  nom varchar
+  indexes{
+    id
+    nom
+  }
+}
+//definition des contacts : un contact est lié a une seule entreprise 
+//mais une entreprise peut avoir plusieurs contacts
+Table contact {
+  id int [pk, increment]
+  entreprise_id int [ref: > entreprise.id]
+  nom varchar
+  prenom varchar
+  fonction varchar
+  mail varchar
+  tel_fixe varchar
+  tel_portable varchar
+  indexes{
+    id
+    entreprise_id
+    nom
+    (id, entreprise_id)
+  }
+}
+//fin definition client contact entreprise_id
+// definition des Avant_Vente
+Table Avant_Vente {
+//nécessaire à la création
+  id int [pk, increment]
+  cree_par int [ref: < utilisateurs.id]
+  demandeur int [ref: < utilisateurs.id]
+  opportunite_Salesforce varchar
+  client_id int [ref: < entreprise.id]
+  nom_projet varchar [not null]
+  type_demande int [ref: > Avant_Vente_type.id]
+  Agence int [ref: < Agence.id]
+  format_reponse int [ref: > Avant_Vente_format_reponse.id]
+  status int [ref: > Avant_Vente_status.id]
+  Date_souhaitee datetime
+  Date_imperative datetime [not null]
+  Date_rendu datetime
+  piece_jointe varchar
+  raccourci varchar
+  created_at datetime [default: `now()`]
+//fin nécessaire creation
+///vie d'avant vente
+  avancement int
+  Acteur_principal int [ref: > utilisateurs.id]
+  //charge par Acteur
+  Charge_acteur_principal int
+  Acteur_2 int [ref: > utilisateurs.id]
+  Charge_Acteur_2 int
+  Acteur_3 int [ref: > utilisateurs.id]
+  Charge_Acteur_3 int
+  //charge par DAS suite rendu
+  charge_das_Datacenter int
+  charge_das_CUC int
+  charge_das_workplace int
+  charge_das_IP int
+  charge_das_autre int
+  indice_confiance int [ ref: > indice_confiance.id]
+  // budgets estimée suite Avant_Vente
+  budget_negoce int
+  budget_build int
+  budget_autre int
+  duree_contrat_annee int
+  version_offre int [default: 1]
+  date_debut_prestation datetime
+  date_remise_effective datetime
+
+}
+//format de réponse : ppt, word, ...
+Table Avant_Vente_format_reponse{
+  id int [pk, increment]
+  nom varchar
+}
+//definition du type de demande : qualification, RFP, budget, ...
+Table Avant_Vente_type{
+  id int [pk, increment]
+  nom varchar
+}
+
+//liste des status : ouvert, en cours, terminé, ...
+Table  Avant_Vente_status {
+  id int [pk, increment]
+  nom varchar
+}
+//liste des indices de confiance
+Table indice_confiance{
+  id int [pk, increment]
+  nom varchar
+}
+//table qui regroupe toutes les notes
+table note {
+  id int [pk, increment]
+  texte text
+  created_at datetime [default: `now()`]
+}
+//association entre les notes et les AVV
+table assoc_Avant_vente_note {
+  Avant_Vente_id int [ref: > Avant_Vente.id]
+  note_id int [ref: > note.id]
+}
+//table qui regroupe tous les logs
+table log {
+  id int [pk, increment]
+  cree_par int [ref: < utilisateurs.id]
+  contenu text
+  created_at datetime [default: `now()`]
+}
+//table d'association entre les logs et les notes
+table assoc_Avant_vente_log {
+  log_id int [ref: > log.id]
+  Avant_Vente_id int [ref: > Avant_Vente.id]
+}
+//table qui recence tous les items ajoutés au planning
+table planning{
+  id int [pk, increment]
+  date datetime
+  charge decimal
+  AM_ou_PM boolean [note: 'false pour matin, true pour apres midi']
+}
+//table d'association des entrées planning aux utilisateurs et aux demandes ou AVV liées
+table assoc_utilisateur_planning_AVV_planification{
+  user_id int [ref: > utilisateurs.id]
+  planning_id int [ref: > planning.id]
+  Avant_Vente_id int [ref: > Avant_Vente.id]
+  planification_id int [ref: > planification.id]
+}
+
+
+Table planification{
+  id int [pk, increment]
+  das_principal int [ref: > DAS.id]
+  das_2 int [ref: > DAS.id]
+  das_3 int [ref: > DAS.id]
+  das_4 int [ref: > DAS.id]
+  das_5 int [ref: > DAS.id]
+}
+//Liste des DAS : Datacenter, IP, CUC, ...
+Table DAS {
+  id int [pk, increment]
+  nom varchar
+}
